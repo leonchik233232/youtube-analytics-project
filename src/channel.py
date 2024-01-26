@@ -1,30 +1,53 @@
+import json
 import os
-from googleapiclient.discovery import build
 
-os.environ["API_KEY"] = "AIzaSyBwgpmMH0dA4JQSAvcf0Li8pxKvlM4oA5g"
+from googleapiclient.discovery import build
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+
+api_key: str = os.getenv('Api_Key')
+
+youtube = build('youtube', 'v3', developerKey=api_key)
+
+
 class Channel:
-    def __init__(self, channel_id):
-        self.api_key = os.environ.get("YOUTUBE_API_KEY")
-        self.channel_id = channel_id
-        self.youtube = build("youtube", "v3", developerKey=self.api_key)
+    """Класс для ютуб-канала"""
+
+    def __init__(self, channel_id: str):
+        self._channel_id = channel_id
+
+    @property
+    def channel(self):
+        return youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()['items'][0]
+
+    @property
+    def title(self):
+        return self.channel['snippet']['title']
+
+    @property
+    def video_count(self):
+        return int(self.channel['statistics']['videoCount'])
+
+    @property
+    def link(self):
+        return f'https://www.youtube.com/channel/{self._channel_id}'
+
+    @classmethod
+    def get_service(cls):
+        return youtube
+
+    def to_json(self, filename: str):
+        data = {
+            'title': self.title,
+            'video_count': self.video_count,
+            'link': self.link
+        }
+        with open(filename, 'w') as file:
+            json.dump(data, file)
 
     def print_info(self):
-        request = self.youtube.channels().list(
-            part="snippet,statistics",
-            id=self.channel_id
-        )
-        response = request.execute()
-        channel_info = response["items"][0]
-
-        title = channel_info["snippet"]["title"]
-        subscribers = channel_info["statistics"]["subscriberCount"]
-        videos = channel_info["statistics"]["videoCount"]
-
-        print(f"Channel: {title}")
-        print(f"Subscribers: {subscribers}")
-        print(f"Videos: {videos}")
-
-if __name__ == "__main__":
-    channel_id = "здесь_ваш_ID_канала"
-    channel = Channel(channel_id)
-    channel.print_info()
+        channel = self.channel
+        print(f"Channel: {channel['snippet']['title']}")
+        print(f"Subscribers: {channel['statistics']['subscriberCount']}")
+        print(f"Views: {channel['statistics']['viewCount']}")
