@@ -1,53 +1,27 @@
-import json
-import os
-
 from googleapiclient.discovery import build
-from dotenv import load_dotenv, find_dotenv
-
-load_dotenv(find_dotenv())
-
-api_key: str = os.getenv('Api_Key')
-
-youtube = build('youtube', 'v3', developerKey=api_key)
-
 
 class Channel:
-    """Класс для ютуб-канала"""
-
-    def __init__(self, channel_id: str):
-        self._channel_id = channel_id
-
-    @property
-    def channel(self):
-        return youtube.channels().list(id=self._channel_id, part='snippet,statistics').execute()['items'][0]
-
-    @property
-    def title(self):
-        return self.channel['snippet']['title']
-
-    @property
-    def video_count(self):
-        return int(self.channel['statistics']['videoCount'])
-
-    @property
-    def link(self):
-        return f'https://www.youtube.com/channel/{self._channel_id}'
-
-    @classmethod
-    def get_service(cls):
-        return youtube
-
-    def to_json(self, filename: str):
-        data = {
-            'title': self.title,
-            'video_count': self.video_count,
-            'link': self.link
-        }
-        with open(filename, 'w') as file:
-            json.dump(data, file)
+    def init(self, channel_id):
+        self.channel_id = channel_id
+        self.api_key = 'YOUR_API_KEY'
+        self.youtube = build('youtube', 'v3', developerKey=self.api_key)
 
     def print_info(self):
-        channel = self.channel
-        print(f"Channel: {channel['snippet']['title']}")
-        print(f"Subscribers: {channel['statistics']['subscriberCount']}")
-        print(f"Views: {channel['statistics']['viewCount']}")
+        channel_info = self.youtube.channels().list(
+            part='snippet, statistics',
+            id=self.channel_id
+        ).execute()
+
+        channel = channel_info['items'][0]
+
+        title = channel['snippet']['title']
+        description = channel['snippet']['description']
+        view_count = channel['statistics']['viewCount']
+        subscriber_count = channel['statistics']['subscriberCount']
+        video_count = channel['statistics']['videoCount']
+
+        print('Title: ', title)
+        print('Description: ', description)
+        print('View Count: ', view_count)
+        print('Subscriber Count: ', subscriber_count)
+        print('Video Count: ', video_count)
