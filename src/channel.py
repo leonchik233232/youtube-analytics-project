@@ -1,7 +1,7 @@
-import json
-import os
-
 from googleapiclient.discovery import build
+import json
+
+
 class Channel:
     def __init__(self, channel_id):
         self._channel_id = channel_id
@@ -22,14 +22,6 @@ class Channel:
     @channel_id.setter
     def channel_id(self, value):
         self._channel_id = value
-        # If channel_id is changed, reset all other attributes
-        self.id = None
-        self.title = None
-        self.description = None
-        self.url = None
-        self.subscriber_count = None
-        self.video_count = None
-        self.view_count = None
 
     def get_channel_info(self):
         channel_info = self.youtube.channels().list(
