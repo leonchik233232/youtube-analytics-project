@@ -1,12 +1,28 @@
-from googleapiclient.discovery import build
 import json
+import os
 
-
+from googleapiclient.discovery import build
 class Channel:
     def __init__(self, channel_id):
-        self.channel_id = channel_id
+        self._channel_id = channel_id
         self.api_key = 'YT_API_KEY'
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
+        self.id = None
+        self.title = None
+        self.description = None
+        self.url = None
+        self.subscriber_count = None
+        self.video_count = None
+        self.view_count = None
+
+    @property
+    def channel_id(self):
+        return self._channel_id
+
+    @channel_id.setter
+    def channel_id(self, value):
+        self._channel_id = value
+        # If channel_id is changed, reset all other attributes
         self.id = None
         self.title = None
         self.description = None
