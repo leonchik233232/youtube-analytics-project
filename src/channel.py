@@ -50,3 +50,54 @@ class Channel:
             id=self.channel_id
         ).execute()
         print(json.dumps(channel_info, indent=2, ensure_ascii=False))
+
+    def __str__(self):
+        return f"{self.title} ({self.url})"
+
+    def __add__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count + other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __sub__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count - other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count < other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count <= other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count > other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count >= other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __eq__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count == other.subscriber_count
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, Channel):
+            return self.subscriber_count != other.subscriber_count
+        else:
+            return NotImplemented
