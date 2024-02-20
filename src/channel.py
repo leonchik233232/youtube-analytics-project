@@ -1,103 +1,76 @@
-from googleapiclient.discovery import build
 import json
 import os
 
+from googleapiclient.discovery import build
+
+
 class Channel:
-    def __init__(self, channel_id):
-        self._channel_id = channel_id
-        self.get_channel_info()
+    api_key: str = os.getenv('API_KEY')
+    youtube = build('youtube', 'v3', developerKey=api_key)
+
+    def __init__(self, channel_id: str) -> None:
+        self.__channel_id = channel_id
+        self.channel = self.youtube.channels().list(id=channel_id, part='snippet,statistics').execute()
+        self.title = self.channel['items'][0]['snippet']['title']
+        self.description = self.channel['items'][0]['snippet']['description']
+        self.url = f"https://www.youtube/channels/{self.__channel_id}"
+        self.subscriber_count = int(self.channel['items'][0]['statistics']['subscriberCount'])
+        self.video_count = int(self.channel['items'][0]['statistics']['videoCount'])
+        self.view_count = int(self.channel['items'][0]['statistics']['viewCount'])
+
+    def __str__(self):
+        return f"{self.title} {self.url}"
+
+    def __add__(self, other):
+        return self.subscriber_count + other.subscriber_count
+
+    def __sub__(self, other):
+        return self.subscriber_count - other.subscriber_count
+
+    def __gt__(self, other):
+        return self.subscriber_count > other.subscriber_count
+
+    def __ge__(self, other):
+        return self.subscriber_count >= other.subscriber_count
+
+    def __lt__(self, other):
+        return self.subscriber_count < other.subscriber_count
+
+    def __le__(self, other):
+        return self.subscriber_count <= other.subscriber_count
+
+    def print_info(self) -> None:
+        print(json.dumps(self.channel, indent=2, ensure_ascii=False))
 
     @property
     def channel_id(self):
-        return self._channel_id
+        return self.__channel_id
 
-    def get_channel_info(self):
-        channel_info = self.get_service().channels().list(
-            part='snippet, statistics',
-            id=self.channel_id
-        ).execute()
-
-        self.id = channel_info['items'][0]['id']
-        self.title = channel_info['items'][0]['snippet']['title']
-        self.description = channel_info['items'][0]['snippet']['description']
-        self.url = f"https://www.youtube.com/channel/{self.id}"
-        self.subscriber_count = channel_info['items'][0]['statistics']['subscriberCount']
-        self.video_count = channel_info['items'][0]['statistics']['videoCount']
-        self.view_count = channel_info['items'][0]['statistics']['viewCount']
+    @channel_id.setter
+    def channel_id(self, new_channel_id):
+        if new_channel_id:
+            print("AttributeError: property 'channel_id' of 'Channel' object has no setter")
+            self.__channel_id = self.__channel_id
 
     @classmethod
     def get_service(cls):
-        api_key = os.getenv('YT_API_KEY')
+        api_key: str = os.getenv('API_KEY')
         youtube = build('youtube', 'v3', developerKey=api_key)
         return youtube
 
-    def to_json(self, filename):
-        channel_info = {
-            "id": self.id,
-            "title": self.title,
-            "description": self.description,
-            "url": self.url,
-            "subscriber_count": self.subscriber_count,
-            "video_count": self.video_count,
-            "view_count": self.view_count
+    def to_json(self, file_json):
+        json_data = {
+            'channel_id': self.__channel_id,
+            'title': self.title,
+            'descrition': self.description,
+            'url': self.url,
+            'subscriber_count': self.subscriber_count,
+            'videoCount': self.video_count,
+            'viewCount': self.view_count
         }
-        with open(filename, "w") as file:
-            json.dump(channel_info, file, ensure_ascii=False, indent=2)
-
-    def print_info(self):
-        channel_info = self.get_service().channels().list(
-            part='snippet, statistics',
-            id=self.channel_id
-        ).execute()
-        print(json.dumps(channel_info, indent=2, ensure_ascii=False))
-
-    def __str__(self):
-        return f"{self.title} ({self.url})"
-
-    def __add__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count + other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __sub__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count - other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __lt__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count < other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __le__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count <= other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __gt__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count > other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __ge__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count >= other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __eq__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count == other.subscriber_count
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, Channel):
-            return self.subscriber_count != other.subscriber_count
-        else:
-            return NotImplemented
+        with open(file_json, 'w', encoding="utf-8") as f:
+            f.write(json.dumps(json_data, ensure_ascii=False, indent=4))
+# if __name__ == "__main__":
+#     api_key = "AIzaSyBwgpmMH0dA4JQSAvcf0Li8pxKvlM4oA5g"
+#     channel = Channel(channel_id)
+#     channel.print_info()
